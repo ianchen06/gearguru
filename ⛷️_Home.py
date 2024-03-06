@@ -43,7 +43,7 @@ test_items = [
     ),
 ]
 
-carousel(items=test_items, height=600, width=1)
+carousel(items=test_items, width=1)
 
 st.sidebar.success("Select a page above.")
 
