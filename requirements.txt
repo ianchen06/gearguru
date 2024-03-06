@@ -1,5 +1,11 @@
-crewai[tools]
+crewai
 duckduckgo-search
 python-dotenv
 openai
 streamlit==1.31.1
+langchain-google-genai
+pillow
+google-generativeai
+langchainhub
+langchain-openai
+unstructured

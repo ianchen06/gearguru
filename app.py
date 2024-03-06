@@ -1,74 +1,117 @@
-import os
-
-from langchain.agents import ConversationalChatAgent, AgentExecutor
-from langchain.memory import ConversationBufferMemory
-from langchain_community.callbacks import StreamlitCallbackHandler
-from langchain_community.chat_message_histories import StreamlitChatMessageHistory
-from langchain_community.tools import DuckDuckGoSearchRun
-from langchain_core.runnables import RunnableConfig
-from langchain_openai import ChatOpenAI
-
+from crewai import Crew
+from textwrap import dedent
+from gear_agents import GearAgents
+from gear_tasks import GearTasks
 import streamlit as st
+import datetime
 from dotenv import load_dotenv
 
 load_dotenv()
 
-st.set_page_config(page_title="LangChain: Chat with search", page_icon="🦜")
-st.title("🦜 LangChain: Chat with search")
+st.set_page_config(page_icon="🏂", layout="wide")
 
-openai_api_key = os.getenv("OPENAI_API_KEY")
-
-msgs = StreamlitChatMessageHistory()
-memory = ConversationBufferMemory(
-    chat_memory=msgs,
-    return_messages=True,
-    memory_key="chat_history",
-    output_key="output",
-)
-if len(msgs.messages) == 0 or st.sidebar.button("Reset chat history"):
-    msgs.clear()
-    msgs.add_ai_message("How can I help you?")
-    st.session_state.steps = {}
-
-avatars = {"human": "user", "ai": "assistant"}
-for idx, msg in enumerate(msgs.messages):
-    with st.chat_message(avatars[msg.type]):
-        # Render intermediate steps if any were saved
-        for step in st.session_state.steps.get(str(idx), []):
-            if step[0].tool == "_Exception":
-                continue
-            with st.status(
-                f"**{step[0].tool}**: {step[0].tool_input}", state="complete"
-            ):
-                st.write(step[0].log)
-                st.write(step[1])
-        st.write(msg.content)
-
-if prompt := st.chat_input(placeholder="Who won the Women's U.S. Open in 2018?"):
-    st.chat_message("user").write(prompt)
-
-    if not openai_api_key:
-        st.info("Please add your OpenAI API key to continue.")
-        st.stop()
-
-    llm = ChatOpenAI(
-        model_name="gpt-3.5-turbo", openai_api_key=openai_api_key, streaming=True
+def icon(emoji: str):
+    """Shows an emoji as a Notion-style page icon."""
+    st.write(
+        f'<span style="font-size: 78px; line-height: 1">{emoji}</span>',
+        unsafe_allow_html=True,
     )
-    tools = [DuckDuckGoSearchRun(name="Search")]
-    chat_agent = ConversationalChatAgent.from_llm_and_tools(llm=llm, tools=tools)
-    executor = AgentExecutor.from_agent_and_tools(
-        agent=chat_agent,
-        tools=tools,
-        memory=memory,
-        return_intermediate_steps=True,
-        handle_parsing_errors=True,
+
+class GearCrew:
+
+  def __init__(self, sport, preferences, sustainability_standards):
+    self.sport = sport
+    self.preferences = preferences
+    self.sustainability_standards = sustainability_standards
+
+  def run(self, update_callback=None):
+    agents = GearAgents()
+    tasks = GearTasks()
+    
+    sustainability_expert_agent = agents.sustainability_expert()
+    gear_selection_agent = agents.gear_selection_agent()
+    eco_conscious_shopper_agent = agents.eco_conscious_shopper()
+  
+    if update_callback:
+        update_callback("Initializing gear selection process...")
+    sustainability_task = tasks.evaluate_sustainability(
+      sustainability_expert_agent,
+      self.sport,
+      self.sustainability_standards
     )
-    with st.chat_message("assistant"):
-        st_cb = StreamlitCallbackHandler(st.container(), expand_new_thoughts=False)
-        cfg = RunnableConfig()
-        cfg["callbacks"] = [st_cb]
-        response = executor.invoke(prompt, cfg)
-        st.write(response["output"])
-        st.session_state.steps[str(len(msgs.messages) - 1)] = response[
-            "intermediate_steps"
-        ]
+
+    if update_callback:
+        update_callback("Agent is gathering information on gear...")
+    gear_selection_task = tasks.select_gear(
+      gear_selection_agent,
+      self.sport,
+      self.preferences,
+      self.sustainability_standards
+    )
+
+    shopping_guide_task = tasks.create_shopping_guide(
+      eco_conscious_shopper_agent,
+      self.sport,
+      self.preferences,
+      self.sustainability_standards
+    )
+
+    crew = Crew(
+      agents=[
+        sustainability_expert_agent, gear_selection_agent, eco_conscious_shopper_agent
+      ],
+      tasks=[sustainability_task, gear_selection_task, shopping_guide_task],
+      verbose=True
+    )
+
+    result = crew.kickoff()
+
+    if update_callback:
+        update_callback("Finalizing gear recommendations...")
+
+    return result
+
+if __name__ == "__main__":
+  icon("⛷️ GearAIgent")
+
+  st.info("**Let AI agents help you choose sustainable winter sports gear...**")
+  
+  today = datetime.datetime.now().date()
+
+  with st.sidebar:
+    st.header("👇 Enter your gear preferences")
+    with st.form("my_form"):
+      sport = st.selectbox("Which winter sport?", ["Skiing", "Snowboarding", "Ice Skating"])
+      preferences = st.text_input("What are your preferences?", placeholder="Eco-friendly, durable, budget-friendly")
+      sustainability_standards = st.multiselect(
+        "Sustainability standards of interest",
+        ["Recycled materials", "Eco-certified", "Low carbon footprint"],
+        default=["Recycled materials"]
+      )
+
+      submitted = st.form_submit_button("Submit")
+    
+    st.divider()
+    
+    st.sidebar.info("Seeking sustainable gear options", icon="🌍")
+    
+    st.sidebar.markdown(
+        """
+        Inspired by **crewAI** for creating adaptive solutions 🚀
+        """,
+        unsafe_allow_html=True
+    )
+
+def update_status(status_container, message):
+    """Callback function for updates"""
+    status_container.write(message)
+
+if submitted:
+    with st.status("**Analyzing preferences and sustainability standards...**", expanded=True) as status:
+      gear_crew = GearCrew(sport, preferences, sustainability_standards)
+      result = gear_crew.run(update_callback=lambda msg: update_status(status, msg))
+      # Update the status container to indicate completion
+      status.update(label="✅ Gear Recommendations Ready!", state="complete", expanded=False)
+  
+    st.subheader("Here are your sustainable gear recommendations:", anchor=False, divider="rainbow")
+    st.markdown(result)
