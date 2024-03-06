@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-tabs = st.tabs(["About", "Chat"])
+tabs = st.tabs(["About", "Campaigns"])
 
 with tabs[0]:
     st.markdown("""
