@@ -11,6 +11,8 @@ st.set_page_config(
 
 st.title("⛷️ Winter Gear Guru")
 
+st.image("images/home.jpg", use_column_width=True)
+
 st.sidebar.success("Select a page above.")
 
 st.markdown(
