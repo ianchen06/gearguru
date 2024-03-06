@@ -1,5 +1,7 @@
 import streamlit as st
 from streamlit_extras.stylable_container import stylable_container
+from streamlit_carousel import carousel
+
 
 
 st.set_page_config(
@@ -12,7 +14,36 @@ st.set_page_config(
 
 st.title("⛷️ Winter Gear Guru")
 
-st.image("images/home.jpg", use_column_width=True)
+# st.image("images/home.jpg", use_column_width=True)
+interval = 2000
+test_items = [
+    dict(
+        title="",
+        text="",
+        interval=interval,
+        img="https://i.imgur.com/tMjs2gB.jpeg",
+    ),
+    dict(
+        title="",
+        text="",
+        interval=interval,
+        img="https://i.imgur.com/QlkPJwP.jpeg",
+    ),
+    dict(
+        title="",
+        text="",
+        interval=interval,
+        img="https://i.imgur.com/cLl406G.jpeg",
+    ),
+    dict(
+        title="",
+        text="",
+        interval=interval,
+        img="https://i.imgur.com/geeh6wN.jpeg",
+    ),
+]
+
+carousel(items=test_items, height=600, width=1)
 
 st.sidebar.success("Select a page above.")
 

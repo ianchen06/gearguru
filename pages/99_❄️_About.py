@@ -31,12 +31,14 @@ with tabs[0]:
 
     ## How to Contribute
 
-    - **Utilize Your Platform**: Share POW's mission and campaigns through your blog, website, social media, or other channels. Create content that highlights the connection between climate change and the outdoor experience.
-    - ***Engage Your Community**: Encourage your followers to become POW members, take action on climate policies, and make sustainable lifestyle choices.
-    - **Partner with Local POW Chapter**: If there's a POW chapter in your area, reach out to collaborate on events, content initiatives, and local advocacy efforts.
-    - **Become a POW Alliance Member**: Depending on your role, consider joining POW's Athlete Alliance, Creative Alliance, Brand Alliance or the Science Alliance. These offer opportunities to engage in deeper collaboration.
-    - **Start a Local Chapter**: If there isn't a POW chapter in your region, explore starting one to lead advocacy and initiatives in your community.
-
+    - **Membership and Donations**: Joining POW as a member or making a donation is one of the most straightforward ways to support their cause. Financial contributions help fund their advocacy work, educational programs, and climate initiatives.
+    - **Volunteering**: POW often seeks volunteers to help with events, campaigns, and other organizational needs. Volunteering is a great way to get involved directly with their efforts and contribute your time and skills.
+    - **Participate in Events**: Attend POW events or initiatives in your area. These can range from educational workshops, climate marches, to community clean-up days. Participating helps raise awareness and supports the organization's goals.
+    - **Advocacy and Education**: Become a climate advocate by educating yourself and others about climate change and its impact on winter sports and outdoor activities. POW provides resources and tools to help you speak effectively about climate issues, contact legislators, and spread the word within your community.
+    - **Corporate Partnerships and Sponsorships**: If you represent a business, consider partnering with POW or sponsoring their initiatives. Corporate partnerships can provide crucial support for POW's projects and help spread their message to a wider audience.
+    - **Social Media and Awareness**: Use your social media platforms to raise awareness about POW and climate change. Sharing information about their campaigns, success stories, and how individuals can contribute plays a vital role in growing their movement.
+    - **Lifestyle Changes**: Commit to making more sustainable choices in your daily life and outdoor activities. Reducing your carbon footprint, supporting eco-friendly brands, and advocating for environmental policies align with POW's mission.
+    
     ## Additional Ideas
 
     - **Climate Change Impacts**: Document how climate change is impacting your favorite outdoor places.
@@ -55,11 +57,17 @@ with tabs[0]:
     """, unsafe_allow_html=True)
 
 with tabs[1]:
+    st.header("GPT Researcher")
+    st.write("Paste a link to a Protect Our Winters campaign page to get a summary.")
+
+    st.markdown("""
+- https://protectourwinters.org/campaign/protect-the-ruby-mountains/
+    """)
     Settings.llm = OpenAI(temperature=0.0, model="gpt-3.5-turbo-0125")
 
     urls = ["https://en.wikipedia.org/wiki/Protect_Our_Winters"]
 
-    url = st.text_input("Enter a URL")
+    url = st.text_input("Enter a POW campaign URL:")
     if url:
         urls = [url]
 
@@ -70,5 +78,5 @@ with tabs[1]:
     index = SummaryIndex.from_documents(documents)
 
     query_engine = index.as_query_engine()
-    response = query_engine.query("Give me a summary of the page.")
+    response = query_engine.query("Give me a detailed summary of the page.")
     st.write(response.response)

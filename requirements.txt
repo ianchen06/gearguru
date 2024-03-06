@@ -13,3 +13,4 @@ streamlit-extras
 llama-index
 llama-index-readers-web
 html2text
+streamlit-carousel
