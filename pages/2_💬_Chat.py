@@ -52,7 +52,7 @@ if prompt := st.chat_input(placeholder="How do I wash my ski jacket?"):
         st.stop()
 
     llm = ChatOpenAI(
-        model_name="gpt-3.5-turbo", openai_api_key=openai_api_key, streaming=True
+        model_name="gpt-3.5-turbo-0125", openai_api_key=openai_api_key, streaming=True
     )
     tools = [DuckDuckGoSearchRun(name="Search")]
     base_prompt = hub.pull("hwchase17/openai-tools-agent")
