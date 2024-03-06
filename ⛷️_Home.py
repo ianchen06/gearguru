@@ -3,7 +3,6 @@ from streamlit_extras.stylable_container import stylable_container
 from streamlit_carousel import carousel
 
 
-
 st.set_page_config(
     page_title="Winter Gear Guru | Eco-Friendly Gear Analysis",
     page_icon="⛷️",
@@ -56,22 +55,10 @@ def nav_to(url):
     )
     st.write(nav_script, unsafe_allow_html=True)
 
+st.divider()
 
 st.header("Main Features")
 
-st.markdown(
-    """
-  <style>
-
-    /*the main div*/
-    .element-container {
-        text-align: center;
-    }
-  
-  </style>
-""",
-    unsafe_allow_html=True,
-)
 cols = st.columns(3)
 with cols[0]:
     with stylable_container(
@@ -79,26 +66,38 @@ with cols[0]:
         css_styles="""img {border-radius: 50%;}""",
     ):
         st.image("images/gear.webp", use_column_width=True)
-    st.button(
-        "Eco friendly gear analysis",
-        type="primary",
-        on_click=lambda: nav_to("/Gear_Analyzer"),
-    )
+    with stylable_container(
+        key="features-container",
+        css_styles="""{text-align: center;}""",
+    ):
+        st.button(
+            "Eco friendly gear analysis",
+            type="primary",
+            on_click=lambda: nav_to("/Gear_Analyzer"),
+        )
 with cols[1]:
     with stylable_container(
         key="features-container2",
         css_styles="""img {border-radius: 50%;}""",
     ):
         st.image("images/chat.webp", use_column_width=True)
-    st.button("Chat with Gear Guru", type="primary", on_click=lambda: nav_to("/Chat"))
+    with stylable_container(
+        key="features-container",
+        css_styles="""{text-align: center;}""",
+    ):
+        st.button("Chat with Gear Guru", type="primary", on_click=lambda: nav_to("/Chat"))
 with cols[2]:
     with stylable_container(
         key="features-container3",
         css_styles="""img {border-radius: 50%;}""",
     ):
         st.image("images/about.webp", use_column_width=True)
-    st.button(
-        "Learn how to protect our winters",
-        type="primary",
-        on_click=lambda: nav_to("/About"),
-    )
+    with stylable_container(
+        key="features-container",
+        css_styles="""{text-align: center;}""",
+    ):
+        st.button(
+            "Learn how to protect our winters",
+            type="primary",
+            on_click=lambda: nav_to("/About"),
+        )
