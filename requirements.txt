@@ -9,3 +9,4 @@ google-generativeai
 langchainhub
 langchain-openai
 unstructured
+streamlit-extras
