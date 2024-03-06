@@ -1,1 +1,3 @@
-python -m streamlit run ⛷️_Home.py
+#!/usr/bin/env sh
+
+streamlit run ⛷️_Home.py
