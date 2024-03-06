@@ -1,117 +1,75 @@
-from crewai import Crew
-from textwrap import dedent
-from gear_agents import GearAgents
-from gear_tasks import GearTasks
+import os
+
 import streamlit as st
-import datetime
-from dotenv import load_dotenv
+import google.generativeai as genai
+import google.ai.generativelanguage as glm
 
-load_dotenv()
+from PIL import Image
 
-st.set_page_config(page_icon="🏂", layout="wide")
+st.set_page_config(
+    page_title="Winter Gear Crew | Eco-Friendly Gear Analysis",
+    page_icon="⛷️",
+    layout="centered",
+    initial_sidebar_state="collapsed",
+)
 
-def icon(emoji: str):
-    """Shows an emoji as a Notion-style page icon."""
+st.title("⛷️ Winter Gear Crew | Eco-Friendly Gear Analysis")
+st.write("Upload an image of winter sports gear to get sustainability advice!")
+
+with st.expander("ℹ️ About this App"):
     st.write(
-        f'<span style="font-size: 78px; line-height: 1">{emoji}</span>',
-        unsafe_allow_html=True,
-    )
-
-class GearCrew:
-
-  def __init__(self, sport, preferences, sustainability_standards):
-    self.sport = sport
-    self.preferences = preferences
-    self.sustainability_standards = sustainability_standards
-
-  def run(self, update_callback=None):
-    agents = GearAgents()
-    tasks = GearTasks()
-    
-    sustainability_expert_agent = agents.sustainability_expert()
-    gear_selection_agent = agents.gear_selection_agent()
-    eco_conscious_shopper_agent = agents.eco_conscious_shopper()
-  
-    if update_callback:
-        update_callback("Initializing gear selection process...")
-    sustainability_task = tasks.evaluate_sustainability(
-      sustainability_expert_agent,
-      self.sport,
-      self.sustainability_standards
-    )
-
-    if update_callback:
-        update_callback("Agent is gathering information on gear...")
-    gear_selection_task = tasks.select_gear(
-      gear_selection_agent,
-      self.sport,
-      self.preferences,
-      self.sustainability_standards
-    )
-
-    shopping_guide_task = tasks.create_shopping_guide(
-      eco_conscious_shopper_agent,
-      self.sport,
-      self.preferences,
-      self.sustainability_standards
-    )
-
-    crew = Crew(
-      agents=[
-        sustainability_expert_agent, gear_selection_agent, eco_conscious_shopper_agent
-      ],
-      tasks=[sustainability_task, gear_selection_task, shopping_guide_task],
-      verbose=True
-    )
-
-    result = crew.kickoff()
-
-    if update_callback:
-        update_callback("Finalizing gear recommendations...")
-
-    return result
-
-if __name__ == "__main__":
-  icon("⛷️ GearAIgent")
-
-  st.info("**Let AI agents help you choose sustainable winter sports gear...**")
-  
-  today = datetime.datetime.now().date()
-
-  with st.sidebar:
-    st.header("👇 Enter your gear preferences")
-    with st.form("my_form"):
-      sport = st.selectbox("Which winter sport?", ["Skiing", "Snowboarding", "Ice Skating"])
-      preferences = st.text_input("What are your preferences?", placeholder="Eco-friendly, durable, budget-friendly")
-      sustainability_standards = st.multiselect(
-        "Sustainability standards of interest",
-        ["Recycled materials", "Eco-certified", "Low carbon footprint"],
-        default=["Recycled materials"]
-      )
-
-      submitted = st.form_submit_button("Submit")
-    
-    st.divider()
-    
-    st.sidebar.info("Seeking sustainable gear options", icon="🌍")
-    
-    st.sidebar.markdown(
         """
-        Inspired by **crewAI** for creating adaptive solutions 🚀
-        """,
-        unsafe_allow_html=True
+    This app uses AI to provide sustainability advice for winter sports gear. 
+    Upload an image of winter sports gear, and the app will generate a short, engaging blog post based on the picture. 
+    The AI model will analyze the image and provide sustainability advice for the gear shown in the picture.
+    """
     )
 
-def update_status(status_container, message):
-    """Callback function for updates"""
-    status_container.write(message)
+GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 
-if submitted:
-    with st.status("**Analyzing preferences and sustainability standards...**", expanded=True) as status:
-      gear_crew = GearCrew(sport, preferences, sustainability_standards)
-      result = gear_crew.run(update_callback=lambda msg: update_status(status, msg))
-      # Update the status container to indicate completion
-      status.update(label="✅ Gear Recommendations Ready!", state="complete", expanded=False)
-  
-    st.subheader("Here are your sustainable gear recommendations:", anchor=False, divider="rainbow")
-    st.markdown(result)
+genai.configure(api_key=GOOGLE_API_KEY)
+model = genai.GenerativeModel("gemini-pro-vision")
+
+
+uploaded_file = st.file_uploader(
+    "Choose an Image file", accept_multiple_files=False, type=["jpg", "png"]
+)
+
+if uploaded_file is not None:
+    image = Image.open(uploaded_file)
+
+    st.image(image, caption="Uploaded Image", use_column_width=True)
+    bytes_data = uploaded_file.getvalue()
+
+generate = st.button("Generate!")
+
+if generate:
+    with st.spinner("Generating sustainability advice..."):
+        model = genai.GenerativeModel("gemini-pro-vision")
+        response = model.generate_content(
+            glm.Content(
+                parts=[
+                    glm.Part(
+                        text="""Based on the image, perform the following tasks:
+- Identify the gear
+    - Brand and model
+- Sustainability report
+    - Environmental impact of materials and manufacturing.
+    - Supply chain ethics
+    - Estimated garment lifespan
+- Care and prolong the life
+    - Care instructions to maximize longevity
+    - Repair and upcycling tips
+                    """
+                    ),
+                    glm.Part(
+                        inline_data=glm.Blob(mime_type="image/jpeg", data=bytes_data)
+                    ),
+                ],
+            ),
+            stream=True,
+        )
+
+        response.resolve()
+
+        st.write(response.text)
