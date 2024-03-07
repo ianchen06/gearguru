@@ -16,9 +16,9 @@ st.subheader("⛷️ Winter Gear Guru")
 cols = st.columns([6, 6])
 with cols[0]:
     st.markdown("<div><br><br></div>", unsafe_allow_html=True)
-    st.markdown("# Sustainable Winter Sports Essentials with AI Precision")
+    st.markdown("# Know your gear, protect our winters")
     st.write(
-        "Empower Your Adventures with Eco-Friendly Choices - Smart, Sustainable, and Supported by AI Technology"
+        "Empower Your Winter Adventures with Eco-Friendly Choices - Smart, Sustainable. Powered by AI Technology"
     )
     st.markdown("<div><br></div>", unsafe_allow_html=True)
     colz = st.columns([1, 1, 1])
