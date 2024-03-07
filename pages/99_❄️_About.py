@@ -1,9 +1,12 @@
+import os
+
 import streamlit as st
 from llama_index.core import Settings
 from llama_index.llms.openai import OpenAI
 from llama_index.core import SummaryIndex
 from llama_index.readers.web import SimpleWebPageReader
 from dotenv import load_dotenv
+from openai import OpenAI as OfficialOpenAI
 
 load_dotenv()
 
@@ -57,8 +60,24 @@ with tabs[0]:
     """, unsafe_allow_html=True)
 
 with tabs[1]:
-    st.header("GPT Researcher")
-    st.write("Paste a link to a Protect Our Winters campaign page to get a summary.")
+    st.header("🚣 GPT Researcher Crew 🚣🏼‍♂️")
+    st.markdown("Paste a link to a Protect Our Winters campaign page to get a summary.")
+    st.markdown("Our crew of AI experts will perform a detailed analysis of the page and provide a summary.")
+
+    with st.expander("Meet our crew of experts! 🤖🤖🤖"):
+        colzz = st.columns(3)
+        with colzz[0]:
+            st.image("images/ai1.webp", use_column_width=True)
+            st.subheader("Politician")
+            st.write("I'm a politician who's passionate about the balance of business and climate change.")
+        with colzz[1]:
+            st.image("images/ai2.webp", use_column_width=True)
+            st.subheader("Climate Activist")
+            st.write("I'm a climate activist who's been fighting for the environment for over 20 years.")
+        with colzz[2]:
+            st.image("images/ai3.webp", use_column_width=True)
+            st.subheader("Business Leader")
+            st.write("I'm a business leader who's been working to make my company more profitable and sustainable.")
 
     st.markdown("""
 - https://protectourwinters.org/campaign/protect-the-ruby-mountains/
@@ -66,17 +85,63 @@ with tabs[1]:
     Settings.llm = OpenAI(temperature=0.0, model="gpt-3.5-turbo-0125")
 
     urls = ["https://en.wikipedia.org/wiki/Protect_Our_Winters"]
+    urls = []
 
     url = st.text_input("Enter a POW campaign URL:")
     if url:
         urls = [url]
 
-    documents = SimpleWebPageReader(html_to_text=True).load_data(
-        urls
-    )
+    if urls:
+        documents = SimpleWebPageReader(html_to_text=True).load_data(
+            urls
+        )
+        index = SummaryIndex.from_documents(documents)
+        query_engine = index.as_query_engine()
+        with st.spinner("Generating Summary..."):
+            response = query_engine.query("""Give me a detailed summary of the page.""")
+            st.title("Summary")
+            highlevel_summary = response.response
+            st.write(highlevel_summary)
+        with st.spinner("Generating Keywords..."):
+            response = query_engine.query("""Give me top five most important keywords from the page.""")
+            st.title("Keywords")
+            st.write(response.response)
+        with st.spinner("Analysis..."):
+            response = query_engine.query("""
+                Give me a comprehensive analysis of the page from the following three perspectives:
+                - Politician who's passionate about the balance of business and climate change.
+                - Climate activist who's been fighting for the environment for over 20 years.
+                - Business leader who's been working to make my company more profitable and sustainable.
+                                        
+                Please output in bullet point format.
+            """)
+            st.title("Crew Analysis")
+            st.write(response.response)
+        with st.spinner("Journalist Summary..."):
+            client = OfficialOpenAI(
+                # This is the default and can be omitted
+                api_key=os.getenv("OPENAI_API_KEY"),
+            )
 
-    index = SummaryIndex.from_documents(documents)
+            prompt = f"""
+Read the following materials, give me a unbiased journalist summary:
 
-    query_engine = index.as_query_engine()
-    response = query_engine.query("Give me a detailed summary of the page.")
-    st.write(response.response)
+High-level Summary:
+{highlevel_summary}                    
+
+Opinions from the three perspectives:                
+{response.response}
+"""
+
+            chat_completion = client.chat.completions.create(
+                messages=[
+                    {
+                        "role": "user",
+                        "content": prompt,
+                    }
+                ],
+                model="gpt-3.5-turbo-0125",
+            )
+            st.title("Journalist Summary")
+            st.write(chat_completion.choices[0].message.content
+)
