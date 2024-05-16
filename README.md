@@ -44,5 +44,5 @@ A sustainability-focused app designed specifically to help outdoor enthusiasts p
     - access to 
         - curated secondhand gear sales, 
         - deeper analytics
-- Affiliate income from promoting vetted sustainable brands
+- Affiliate income from promoting vetted sustainable brands.
 
